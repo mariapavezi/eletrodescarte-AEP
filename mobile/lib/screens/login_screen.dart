@@ -74,7 +74,6 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 40),
-                // Logo Container
                 Center(
                   child: Container(
                     width: 76,
@@ -91,7 +90,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Subtitle
                 const Text(
                   "Transformando seu lixo eletrônico\nem um futuro sustentável.",
                   textAlign: TextAlign.center,
@@ -104,7 +102,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 48),
 
-                // Email Label
                 Row(
                   children: [
                     Icon(Icons.mail_outline, size: 18, color: primaryGreen),
@@ -155,7 +152,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Password Label
                 Row(
                   children: [
                     Icon(Icons.lock_outline, size: 18, color: primaryGreen),
@@ -206,7 +202,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 36),
 
-                // Login Button
                 ElevatedButton(
                   onPressed: _isLoading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
@@ -244,7 +239,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Navigation to Register
                 Center(
                   child: Column(
                     children: [
@@ -280,7 +274,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 48),
 
-                // Footer
                 const Center(
                   child: Text(
                     "TECNOLOGIA PARA O MEIO AMBIENTE • V1.0.0",

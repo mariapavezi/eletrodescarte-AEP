@@ -69,7 +69,6 @@ public class IndicadorServiceTest {
     @Test
     @DisplayName("Deve calcular indicadores corretamente com múltiplos descartes e materiais")
     void deveCalcularIndicadoresCorretamente() {
-        // Arrange
         DescarteItem item1 = new DescarteItem();
         item1.setMaterial(pilhas);
         item1.setQuantidadeKg(new BigDecimal("2.0"));
@@ -88,17 +87,10 @@ public class IndicadorServiceTest {
         when(descarteRepository.findByUsuario(usuario)).thenReturn(Arrays.asList(descarte1, descarte2));
         when(fatoresRepository.findAll()).thenReturn(Arrays.asList(fatorPilhas, fatorNotebooks));
 
-        // Act
         IndicadorService.IndicadoresDTO resultado = indicadorService.calcularIndicadoresPorUsuario(1L);
 
-        // Assert
-        // Total Kg: 2.0 + 5.0 = 7.0
         assertEquals(new BigDecimal("7.0"), resultado.totalKgDescartado());
-        
-        // Total CO2: (2.0 * 4.5) + (5.0 * 8.0) = 9.0 + 40.0 = 49.0
         assertEquals(new BigDecimal("49.00"), resultado.totalCo2Evitado());
-        
-        // Total Agua: (2.0 * 50.0) + (5.0 * 150.0) = 100.0 + 750.0 = 850.0
         assertEquals(new BigDecimal("850.00"), resultado.totalAguaEconomizada());
     }
 }

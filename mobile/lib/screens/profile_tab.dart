@@ -41,7 +41,6 @@ class ProfileTab extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 20),
-            // Profile Header / Avatar
             Center(
               child: Column(
                 children: [
@@ -81,7 +80,6 @@ class ProfileTab extends StatelessWidget {
             ),
             const SizedBox(height: 40),
 
-            // Profile info cards
             Container(
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
@@ -119,7 +117,6 @@ class ProfileTab extends StatelessWidget {
             ),
             const SizedBox(height: 36),
 
-            // Logout Button
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pushReplacement(

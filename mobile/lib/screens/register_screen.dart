@@ -136,7 +136,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Name Field
                 Row(
                   children: [
                     Icon(Icons.person_outline, size: 18, color: primaryGreen),
@@ -186,7 +185,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Email Field
                 Row(
                   children: [
                     Icon(Icons.mail_outline, size: 18, color: primaryGreen),
@@ -237,7 +235,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Password Field
                 Row(
                   children: [
                     Icon(Icons.lock_outline, size: 18, color: primaryGreen),
@@ -288,7 +285,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // City Dropdown
                 Row(
                   children: [
                     Icon(Icons.location_city_outlined, size: 18, color: primaryGreen),
@@ -343,7 +339,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                 const SizedBox(height: 36),
 
-                // Register Button
                 ElevatedButton(
                   onPressed: _isRegistering || _isLoadingCidades ? null : _handleRegister,
                   style: ElevatedButton.styleFrom(

@@ -15,6 +15,7 @@ import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.List;
 
 @SpringBootApplication
 public class EletrodescarteApplication {
@@ -94,14 +95,15 @@ public class EletrodescarteApplication {
                 pilhas.setNome("Pilhas e Baterias");
                 pilhas.setUnidade("kg");
                 pilhas.setDescricao("Pilhas comuns, baterias de celular, notebook.");
-                pilhas = materialRepository.save(pilhas);
-
+                
                 FatoresMateriais f = new FatoresMateriais();
                 f.setMaterial(pilhas);
                 f.setCo2eKgPorKg(new BigDecimal("4.500000"));
                 f.setAguaLitrosPorKg(new BigDecimal("50.00"));
                 f.setIndiceToxicidadePorKg(new BigDecimal("0.850000"));
-                fatoresRepository.save(f);
+                
+                pilhas.setFatoresMateriais(f);
+                pilhas = materialRepository.save(pilhas);
             }
 
             Material celulares = materialRepository.findAll().stream().filter(m -> m.getNome().contains("Celulares")).findFirst().orElse(null);
@@ -110,14 +112,15 @@ public class EletrodescarteApplication {
                 celulares.setNome("Celulares e Tablets");
                 celulares.setUnidade("un");
                 celulares.setDescricao("Aparelhos inteiros, mesmo quebrados.");
-                celulares = materialRepository.save(celulares);
-
+                
                 FatoresMateriais f = new FatoresMateriais();
                 f.setMaterial(celulares);
                 f.setCo2eKgPorKg(new BigDecimal("12.000000"));
                 f.setAguaLitrosPorKg(new BigDecimal("250.00"));
                 f.setIndiceToxicidadePorKg(new BigDecimal("0.600000"));
-                fatoresRepository.save(f);
+                
+                celulares.setFatoresMateriais(f);
+                celulares = materialRepository.save(celulares);
             }
 
             Material computadores = materialRepository.findAll().stream().filter(m -> m.getNome().contains("Computadores")).findFirst().orElse(null);
@@ -126,14 +129,15 @@ public class EletrodescarteApplication {
                 computadores.setNome("Computadores");
                 computadores.setUnidade("un");
                 computadores.setDescricao("Desktops, notebooks, CPUs, monitores.");
-                computadores = materialRepository.save(computadores);
-
+                
                 FatoresMateriais f = new FatoresMateriais();
                 f.setMaterial(computadores);
                 f.setCo2eKgPorKg(new BigDecimal("8.000000"));
                 f.setAguaLitrosPorKg(new BigDecimal("150.00"));
                 f.setIndiceToxicidadePorKg(new BigDecimal("0.400000"));
-                fatoresRepository.save(f);
+                
+                computadores.setFatoresMateriais(f);
+                computadores = materialRepository.save(computadores);
             }
 
             Material lampadas = materialRepository.findAll().stream().filter(m -> m.getNome().contains("Lâmpadas")).findFirst().orElse(null);
@@ -142,14 +146,15 @@ public class EletrodescarteApplication {
                 lampadas.setNome("Lâmpadas Fluorescentes");
                 lampadas.setUnidade("un");
                 lampadas.setDescricao("Lâmpadas que contêm mercúrio.");
-                lampadas = materialRepository.save(lampadas);
-
+                
                 FatoresMateriais f = new FatoresMateriais();
                 f.setMaterial(lampadas);
                 f.setCo2eKgPorKg(new BigDecimal("2.000000"));
                 f.setAguaLitrosPorKg(new BigDecimal("10.00"));
                 f.setIndiceToxicidadePorKg(new BigDecimal("1.500000"));
-                fatoresRepository.save(f);
+                
+                lampadas.setFatoresMateriais(f);
+                lampadas = materialRepository.save(lampadas);
             }
 
             // 4. Seed PontosColeta

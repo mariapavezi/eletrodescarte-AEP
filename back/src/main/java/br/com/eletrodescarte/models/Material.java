@@ -28,7 +28,8 @@ public class Material {
     @Column(unique = true)
     private String nome;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
+    @JsonIgnore
     private String descricao;
 
     @Column(nullable = false)

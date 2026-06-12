@@ -45,6 +45,7 @@ public class AuthController {
             return new ResponseEntity<>(usuarioSalvo, HttpStatus.CREATED);
 
         } catch (RuntimeException e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }

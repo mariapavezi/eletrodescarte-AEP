@@ -32,6 +32,15 @@ public class Usuario {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(unique = true)
+    private String cpfCnpj;
+
+    @Column(name = "total_points")
+    private int totalPoints = 0;
+
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean ativo = true;
+
     @Column(name = "hash_senha", nullable = false)
     @JsonIgnore
     private String hashSenha;

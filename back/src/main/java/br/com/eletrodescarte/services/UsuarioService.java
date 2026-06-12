@@ -3,6 +3,8 @@ package br.com.eletrodescarte.services;
 import br.com.eletrodescarte.models.Usuario;
 import br.com.eletrodescarte.enums.PapelUsuario;
 import br.com.eletrodescarte.repositories.UsuarioRepository;
+import br.com.eletrodescarte.controllers.dto.UsuarioDTO;
+import br.com.eletrodescarte.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,23 @@ public class UsuarioService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Transactional
+    public Usuario cadastrar(UsuarioDTO dto) {
+        Usuario usuario = new Usuario();
+        usuario.setNomeCompleto(dto.getNome());
+        usuario.setEmail(dto.getEmail());
+        usuario.setCpfCnpj(dto.getCpfCnpj());
+        usuario.setPapel(PapelUsuario.CIDADAO);
+        // Note: Missing password in DTO, setting a default or random if required by existing logic
+        usuario.setHashSenha(passwordEncoder.encode("mudar123")); 
+        return usuarioRepository.save(usuario);
+    }
+
+    public Usuario buscarPorId(Long id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+    }
 
     @Transactional
     public Usuario cadastrarUsuario(Usuario usuario) {

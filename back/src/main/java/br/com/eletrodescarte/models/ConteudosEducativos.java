@@ -29,8 +29,7 @@ public class ConteudosEducativos {
     @Column(unique = true)
     private String slug;
 
-    @Lob
-    @Column(name = "corpo_md", nullable = false)
+    @Column(name = "corpo_md", nullable = false, columnDefinition = "TEXT")
     private String corpoMd;
 
     @Enumerated(EnumType.STRING)

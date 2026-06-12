@@ -35,8 +35,9 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/pontos-coleta", "/api/conteudos", "/api/cidades", "/api/indicadores/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/cadastrar", "/api/auth/login").permitAll()
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers("/api/pontos-coleta/**", "/api/pontos-coleta", "/api/conteudos/**", "/api/conteudos", "/api/cidades/**", "/api/cidades", "/api/indicadores/**", "/api/agendamentos/**", "/api/agendamentos", "/api/usuarios/**", "/api/usuarios").permitAll()
+                        .requestMatchers("/api/auth/cadastrar", "/api/auth/login").permitAll()
                         .anyRequest().authenticated()
                 );
 
@@ -47,14 +48,13 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:*", "http://127.0.0.1:*"));
-
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", configuration);
+        source.registerCorsConfiguration("/**", configuration);
 
         return source;
     }

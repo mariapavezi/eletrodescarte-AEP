@@ -25,7 +25,7 @@ public class Auditoria {
     @Column(nullable = false)
     private String acao;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String detalhe;
 
     private String ip;

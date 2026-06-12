@@ -42,8 +42,7 @@ class _NewDiscardScreenState extends State<NewDiscardScreen> {
   Future<void> _loadFormData() async {
     try {
       final pontos = await _apiService.buscarPontosColeta();
-      
-      // Extrai todos os materiais únicos disponíveis em todos os pontos
+
       final materiaisMap = <int, MaterialModel>{};
       for (var p in pontos) {
         for (var m in p.materiaisAceitos) {
@@ -73,15 +72,12 @@ class _NewDiscardScreenState extends State<NewDiscardScreen> {
     setState(() {
       _selectedPonto = ponto;
       if (ponto != null) {
-        // Filtra os materiais disponíveis para apenas os que o ponto aceita
         _materiaisDisponiveis = ponto.materiaisAceitos;
-        // Se o material anteriormente selecionado não estiver na nova lista, reseta a seleção de material
-        if (_selectedMaterial != null && 
+        if (_selectedMaterial != null &&
             !ponto.materiaisAceitos.any((m) => m.idMaterial == _selectedMaterial!.idMaterial)) {
           _selectedMaterial = null;
         }
       } else {
-        // Recarrega todos os materiais únicos
         final materiaisMap = <int, MaterialModel>{};
         for (var p in _pontos) {
           for (var m in p.materiaisAceitos) {
@@ -195,7 +191,6 @@ class _NewDiscardScreenState extends State<NewDiscardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Top Tip Card
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -241,7 +236,6 @@ class _NewDiscardScreenState extends State<NewDiscardScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      // Dropdown: Ponto de Coleta (Selected first so we filter residue type)
                       Row(
                         children: [
                           Icon(Icons.location_on_outlined, size: 18, color: primaryGreen),
@@ -282,7 +276,6 @@ class _NewDiscardScreenState extends State<NewDiscardScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Dropdown: Tipo de resíduo
                       Row(
                         children: [
                           Icon(Icons.phone_android_outlined, size: 18, color: primaryGreen),
@@ -327,7 +320,6 @@ class _NewDiscardScreenState extends State<NewDiscardScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Field: Peso aproximado (kg)
                       Row(
                         children: [
                           Icon(Icons.scale_outlined, size: 18, color: primaryGreen),
@@ -389,7 +381,6 @@ class _NewDiscardScreenState extends State<NewDiscardScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      // Input: Observações (Extra, optional)
                       const Row(
                         children: [
                           Icon(Icons.notes, size: 18, color: primaryGreen),
@@ -431,7 +422,6 @@ class _NewDiscardScreenState extends State<NewDiscardScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      // Warning Alert Card
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
@@ -459,7 +449,6 @@ class _NewDiscardScreenState extends State<NewDiscardScreen> {
                       ),
                       const SizedBox(height: 36),
 
-                      // Submit Button
                       ElevatedButton(
                         onPressed: _isSaving ? null : _handleSubmit,
                         style: ElevatedButton.styleFrom(

@@ -104,16 +104,13 @@ class _DashboardTabState extends State<DashboardTab> with AutomaticKeepAliveClie
       final meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
       return "${parsed.day} ${meses[parsed.month - 1]}, ${parsed.year}";
     } catch (e) {
-      // If date comes back as something else, clean it up or display as is
       return dateStr.replaceAll('T', ' ').substring(0, 16);
     }
   }
 
   double _calcularCo2Descarte(Descarte d) {
-    // Estimativa simples para exibição local no histórico
     double total = 0.0;
     for (var item in d.itens) {
-      // Pilhas: ~4.5kg CO2 por kg, Notebooks: ~12.0kg CO2 por un/kg
       final fator = item.material.nome.toLowerCase().contains("pilha") ? 4.5 : 12.0;
       total += item.quantidadeKg * fator;
     }
@@ -169,7 +166,6 @@ class _DashboardTabState extends State<DashboardTab> with AutomaticKeepAliveClie
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Welcome Header
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -231,7 +227,6 @@ class _DashboardTabState extends State<DashboardTab> with AutomaticKeepAliveClie
                     ),
                     const SizedBox(height: 28),
 
-                    // Meu Impacto Section Header
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -262,15 +257,13 @@ class _DashboardTabState extends State<DashboardTab> with AutomaticKeepAliveClie
                     ),
                     const SizedBox(height: 12),
 
-                    // Grid Impact Cards
                     Row(
                       children: [
-                        // Card 1: CO2
                         Expanded(
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE8F9F0), // Light green background
+                              color: const Color(0xFFE8F9F0),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(color: primaryGreen.withOpacity(0.2), width: 1),
                             ),
@@ -304,12 +297,11 @@ class _DashboardTabState extends State<DashboardTab> with AutomaticKeepAliveClie
                           ),
                         ),
                         const SizedBox(width: 16),
-                        // Card 2: Water
                         Expanded(
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE6F3FF), // Light blue background
+                              color: const Color(0xFFE6F3FF),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(color: Colors.blue.withOpacity(0.2), width: 1),
                             ),
@@ -346,7 +338,6 @@ class _DashboardTabState extends State<DashboardTab> with AutomaticKeepAliveClie
                     ),
                     const SizedBox(height: 20),
 
-                    // Goal Card
                     Container(
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
@@ -379,7 +370,6 @@ class _DashboardTabState extends State<DashboardTab> with AutomaticKeepAliveClie
                             ],
                           ),
                           const SizedBox(height: 10),
-                          // Linear progress bar
                           ClipRRect(
                             borderRadius: BorderRadius.circular(4),
                             child: LinearProgressIndicator(
@@ -404,7 +394,6 @@ class _DashboardTabState extends State<DashboardTab> with AutomaticKeepAliveClie
                     ),
                     const SizedBox(height: 28),
 
-                    // Últimos Descartes Header
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -419,7 +408,6 @@ class _DashboardTabState extends State<DashboardTab> with AutomaticKeepAliveClie
                         if (_descartes.isNotEmpty)
                           TextButton(
                             onPressed: () {
-                              // Just show all in a dialog or scroll
                               _showAllDescartesDialog();
                             },
                             style: TextButton.styleFrom(
@@ -440,7 +428,6 @@ class _DashboardTabState extends State<DashboardTab> with AutomaticKeepAliveClie
                     ),
                     const SizedBox(height: 12),
 
-                    // Descartes list
                     if (_descartes.isEmpty)
                       Container(
                         padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
@@ -533,7 +520,6 @@ class _DashboardTabState extends State<DashboardTab> with AutomaticKeepAliveClie
                       ),
                     const SizedBox(height: 28),
 
-                    // Button Registrar Novo Descarte
                     ElevatedButton(
                       onPressed: _openNewDiscardScreen,
                       style: ElevatedButton.styleFrom(
@@ -562,7 +548,6 @@ class _DashboardTabState extends State<DashboardTab> with AutomaticKeepAliveClie
                     ),
                     const SizedBox(height: 16),
 
-                    // Footer Tip
                     const Text(
                       "Ao descartar eletrônicos corretamente, você evita a contaminação do solo por metais pesados.",
                       textAlign: TextAlign.center,

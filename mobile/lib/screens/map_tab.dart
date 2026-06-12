@@ -226,7 +226,6 @@ class _MapTabState extends State<MapTab> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                // Search Input Field
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Container(
@@ -255,7 +254,6 @@ class _MapTabState extends State<MapTab> {
                   ),
                 ),
 
-                // Mapa OpenStreetMap
                 Container(
                   height: 220,
                   margin: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -347,7 +345,6 @@ class _MapTabState extends State<MapTab> {
                   ),
                 ),
 
-                // Locais Próximos Header
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 20, 16, 10),
                   child: Row(
@@ -374,7 +371,6 @@ class _MapTabState extends State<MapTab> {
                           ),
                         ],
                       ),
-                      // Filter Badge/Menu
                       PopupMenuButton<String>(
                         onSelected: (String material) {
                           setState(() {
@@ -427,7 +423,6 @@ class _MapTabState extends State<MapTab> {
                   ),
                 ),
 
-                // Collection Points List
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -448,7 +443,6 @@ class _MapTabState extends State<MapTab> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Left Avatar representation
                             CircleAvatar(
                               radius: 20,
                               backgroundColor: const Color(0xFFF1F3F5),
@@ -459,7 +453,6 @@ class _MapTabState extends State<MapTab> {
                               ),
                             ),
                             const SizedBox(width: 14),
-                            // Details
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -479,7 +472,6 @@ class _MapTabState extends State<MapTab> {
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                      // Status Text/Badge
                                       if (isOpen)
                                         const Text(
                                           "Aberto",
@@ -518,10 +510,8 @@ class _MapTabState extends State<MapTab> {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   const SizedBox(height: 8),
-                                  // Badges row
                                   Row(
                                     children: [
-                                      // Distance
                                       Icon(Icons.location_on_outlined, color: Colors.green[700], size: 14),
                                       const SizedBox(width: 4),
                                       Text(
@@ -529,7 +519,6 @@ class _MapTabState extends State<MapTab> {
                                         style: const TextStyle(fontSize: 11, color: Color(0xFF6C757D)),
                                       ),
                                       const SizedBox(width: 14),
-                                      // Hours
                                       const Icon(Icons.access_time, color: Colors.blue, size: 14),
                                       const SizedBox(width: 4),
                                       Text(
@@ -542,7 +531,6 @@ class _MapTabState extends State<MapTab> {
                               ),
                             ),
                             const SizedBox(width: 10),
-                            // Action Button / Arrow
                             IconButton(
                               onPressed: () {
                                 _focarPonto(ponto);
@@ -563,7 +551,6 @@ class _MapTabState extends State<MapTab> {
                   ),
                 ),
 
-                // Support Alert Box (Bottom)
                 Container(
                   margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                   padding: const EdgeInsets.all(14),

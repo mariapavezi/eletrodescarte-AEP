@@ -3,6 +3,7 @@ import '../models/usuario.dart';
 import '../models/indicadores.dart';
 import '../models/descarte.dart';
 import '../services/api_service.dart';
+import '../utils/brasil_time.dart';
 import 'new_discard_screen.dart';
 
 class DashboardTab extends StatefulWidget {
@@ -14,11 +15,14 @@ class DashboardTab extends StatefulWidget {
   State<DashboardTab> createState() => _DashboardTabState();
 }
 
-class _DashboardTabState extends State<DashboardTab> {
+class _DashboardTabState extends State<DashboardTab> with AutomaticKeepAliveClientMixin {
   final ApiService _apiService = ApiService();
   bool _isLoading = true;
   Indicadores? _indicadores;
   List<Descarte> _descartes = [];
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -26,30 +30,52 @@ class _DashboardTabState extends State<DashboardTab> {
     _refreshData();
   }
 
-  Future<void> _refreshData() async {
-    setState(() => _isLoading = true);
+  Future<void> _refreshData({bool showLoading = true}) async {
+    if (showLoading) {
+      setState(() => _isLoading = true);
+    }
     try {
       final id = widget.usuario.idUsuario;
       final indicadores = await _apiService.buscarIndicadores(id);
       final descartes = await _apiService.buscarDescartesUsuario(id);
-      
+
+      descartes.sort((a, b) {
+        final dateA = DateTime.tryParse(a.descartadoEm ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final dateB = DateTime.tryParse(b.descartadoEm ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return dateB.compareTo(dateA);
+      });
+
+      if (!mounted) return;
       setState(() {
         _indicadores = indicadores;
         _descartes = descartes;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Erro ao carregar dados: ${e.toString().replaceAll('Exception: ', '')}"),
-            backgroundColor: Colors.red[700],
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Erro ao carregar dados: ${e.toString().replaceAll('Exception: ', '')}"),
+          backgroundColor: Colors.red[700],
+        ),
+      );
     }
   }
+
+  Future<void> _openNewDiscardScreen() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => NewDiscardScreen(
+          usuario: widget.usuario,
+          onDiscardCreated: _refreshData,
+        ),
+      ),
+    );
+    await _refreshData(showLoading: false);
+  }
+
+  List<Descarte> get _ultimosDescartes => _descartes.take(2).toList();
 
   String _getInitials(String name) {
     if (name.isEmpty) return 'U';
@@ -64,14 +90,14 @@ class _DashboardTabState extends State<DashboardTab> {
     if (dateStr == null) return "Sem data";
     try {
       final parsed = DateTime.parse(dateStr);
-      final now = DateTime.now();
+      final agora = BrasilTime.agora();
       
-      if (parsed.year == now.year && parsed.month == now.month && parsed.day == now.day) {
+      if (parsed.year == agora.year && parsed.month == agora.month && parsed.day == agora.day) {
         return "Hoje, ${parsed.hour.toString().padLeft(2, '0')}:${parsed.minute.toString().padLeft(2, '0')}";
       }
       
-      final yesterday = now.subtract(const Duration(days: 1));
-      if (parsed.year == yesterday.year && parsed.month == yesterday.month && parsed.day == yesterday.day) {
+      final ontem = agora.subtract(const Duration(days: 1));
+      if (parsed.year == ontem.year && parsed.month == ontem.month && parsed.day == ontem.day) {
         return "Ontem, ${parsed.hour.toString().padLeft(2, '0')}:${parsed.minute.toString().padLeft(2, '0')}";
       }
 
@@ -96,6 +122,7 @@ class _DashboardTabState extends State<DashboardTab> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     const primaryGreen = Color(0xFF1ECB71);
     final countDescartes = _descartes.length;
     const metaDescartes = 4;
@@ -438,7 +465,7 @@ class _DashboardTabState extends State<DashboardTab> {
                       )
                     else
                       Column(
-                        children: _descartes.take(2).map((descarte) {
+                        children: _ultimosDescartes.map((descarte) {
                           final label = descarte.itens.map((i) => i.material.nome).join(', ');
                           final co2 = _calcularCo2Descarte(descarte);
 
@@ -508,18 +535,7 @@ class _DashboardTabState extends State<DashboardTab> {
 
                     // Button Registrar Novo Descarte
                     ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => NewDiscardScreen(
-                              usuario: widget.usuario,
-                              onDiscardCreated: () {
-                                _refreshData();
-                              },
-                            ),
-                          ),
-                        );
-                      },
+                      onPressed: _openNewDiscardScreen,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryGreen,
                         foregroundColor: Colors.white,

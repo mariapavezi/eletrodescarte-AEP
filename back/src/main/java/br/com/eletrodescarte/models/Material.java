@@ -28,7 +28,7 @@ public class Material {
     @Column(unique = true)
     private String nome;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String descricao;
 
     @Column(nullable = false)

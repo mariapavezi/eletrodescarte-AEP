@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface DescarteRepository extends JpaRepository<Descarte, Long> {
     List<Descarte> findByUsuario(Usuario usuario);
+
+    List<Descarte> findByUsuario_IdUsuarioOrderByDescartadoEmDesc(Long idUsuario);
 }

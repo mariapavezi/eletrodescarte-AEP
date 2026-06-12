@@ -35,8 +35,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/pontos-coleta", "/api/conteudos", "/api/cidades", "/api/indicadores/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/cadastrar", "/api/auth/login").permitAll()
+                        .requestMatchers("/api/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

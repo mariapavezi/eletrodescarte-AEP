@@ -7,7 +7,7 @@ import '../services/api_service.dart';
 
 class NewDiscardScreen extends StatefulWidget {
   final Usuario usuario;
-  final VoidCallback onDiscardCreated;
+  final Future<void> Function() onDiscardCreated;
 
   const NewDiscardScreen({
     super.key,
@@ -121,20 +121,18 @@ class _NewDiscardScreenState extends State<NewDiscardScreen> {
         itens: [item],
       );
 
-      final sucesso = await _apiService.enviarDescarte(descarte);
+      await _apiService.enviarDescarte(descarte);
 
       if (mounted) {
-        if (sucesso) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Descarte registrado com sucesso!"),
-              backgroundColor: Colors.green,
-            ),
-          );
-          widget.onDiscardCreated();
-          Navigator.of(context).pop();
-        } else {
-          _showErrorSnackBar("Falha ao registrar descarte no servidor.");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Descarte registrado com sucesso!"),
+            backgroundColor: Colors.green,
+          ),
+        );
+        await widget.onDiscardCreated();
+        if (mounted) {
+          Navigator.of(context).pop(true);
         }
       }
     } catch (e) {

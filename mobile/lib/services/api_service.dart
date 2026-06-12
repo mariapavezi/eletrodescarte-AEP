@@ -113,6 +113,12 @@ class ApiService {
       body: json.encode(descarte.toJson()),
     );
 
-    return response.statusCode == 200 || response.statusCode == 201;
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return true;
+    }
+
+    throw Exception(
+      "Falha ao salvar descarte (HTTP ${response.statusCode}): ${utf8.decode(response.bodyBytes)}",
+    );
   }
 }

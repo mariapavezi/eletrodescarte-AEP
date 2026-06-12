@@ -1,4 +1,7 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../models/usuario.dart';
 import '../models/ponto_coleta.dart';
 import '../services/api_service.dart';
@@ -15,6 +18,10 @@ class MapTab extends StatefulWidget {
 class _MapTabState extends State<MapTab> {
   final ApiService _apiService = ApiService();
   final _searchController = TextEditingController();
+  final MapController _mapController = MapController();
+
+  static const _defaultCenter = LatLng(-23.5505, -46.6333);
+  static const _tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
   
   List<PontoColeta> _todosPontos = [];
   List<PontoColeta> _pontosFiltrados = [];
@@ -33,9 +40,10 @@ class _MapTabState extends State<MapTab> {
       final pontos = await _apiService.buscarPontosColeta();
       setState(() {
         _todosPontos = pontos;
-        _pontosFiltrados = pontos;
+        _pontosFiltrados = _ordenarPontos(pontos);
         _isLoading = false;
       });
+      WidgetsBinding.instance.addPostFrameCallback((_) => _ajustarMapa());
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
@@ -52,7 +60,7 @@ class _MapTabState extends State<MapTab> {
   void _filtrarPontos() {
     final query = _searchController.text.toLowerCase().trim();
     setState(() {
-      _pontosFiltrados = _todosPontos.where((ponto) {
+      _pontosFiltrados = _ordenarPontos(_todosPontos.where((ponto) {
         final matchQuery = ponto.nome.toLowerCase().contains(query) ||
             ponto.endereco.toLowerCase().contains(query);
             
@@ -60,55 +68,121 @@ class _MapTabState extends State<MapTab> {
             ponto.materiaisAceitos.any((m) => m.nome == _filtroMaterial);
 
         return matchQuery && matchMaterial;
-      }).toList();
+      }).toList());
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ajustarMapa());
   }
 
-  bool _isPointOpen(PontoColeta p) {
-    if (!p.ativo) return false;
-    if (p.horarios.isEmpty) return true;
-    final now = DateTime.now();
-    final diaAtual = now.weekday; // Segunda = 1, Domingo = 7
+  List<PontoColeta> get _pontosComCoordenadas {
+    return _pontosFiltrados
+        .where((p) => p.latitude != null && p.longitude != null)
+        .toList();
+  }
 
-    final horarioDia = p.horarios.firstWhere(
-      (h) => h.diaSemana == diaAtual,
-      orElse: () => p.horarios.first,
+  LatLng _centroInicial() {
+    final pontos = _pontosComCoordenadas;
+    if (pontos.isNotEmpty) {
+      return LatLng(pontos.first.latitude!, pontos.first.longitude!);
+    }
+
+    final cidade = widget.usuario.cidade?.nome.toLowerCase() ?? '';
+    if (cidade.contains('curitiba')) return const LatLng(-25.4284, -49.2733);
+    if (cidade.contains('maringá') || cidade.contains('maringa')) {
+      return const LatLng(-23.4210, -51.9331);
+    }
+    if (cidade.contains('são paulo') || cidade.contains('sao paulo')) {
+      return const LatLng(-23.5505, -46.6333);
+    }
+
+    return _defaultCenter;
+  }
+
+  void _ajustarMapa() {
+    final pontos = _pontosComCoordenadas;
+    if (pontos.isEmpty) {
+      _mapController.move(_centroInicial(), 11);
+      return;
+    }
+
+    if (pontos.length == 1) {
+      _mapController.move(
+        LatLng(pontos.first.latitude!, pontos.first.longitude!),
+        14,
+      );
+      return;
+    }
+
+    final bounds = LatLngBounds.fromPoints(
+      pontos.map((p) => LatLng(p.latitude!, p.longitude!)).toList(),
     );
-    
-    try {
-      final abreParts = horarioDia.abreAs.split(':');
-      final fechaParts = horarioDia.fechaAs.split(':');
-      
-      final abreMinutos = int.parse(abreParts[0]) * 60 + int.parse(abreParts[1]);
-      final fechaMinutos = int.parse(fechaParts[0]) * 60 + int.parse(fechaParts[1]);
-      final agoraMinutos = now.hour * 60 + now.minute;
-      
-      return agoraMinutos >= abreMinutos && agoraMinutos <= fechaMinutos;
-    } catch (e) {
+
+    _mapController.fitCamera(
+      CameraFit.bounds(
+        bounds: bounds,
+        padding: const EdgeInsets.all(48),
+      ),
+    );
+  }
+
+  void _focarPonto(PontoColeta ponto) {
+    if (ponto.latitude == null || ponto.longitude == null) return;
+    _mapController.move(LatLng(ponto.latitude!, ponto.longitude!), 15);
+  }
+
+  List<PontoColeta> _ordenarPontos(List<PontoColeta> pontos) {
+    final lista = List<PontoColeta>.from(pontos);
+    final cidadeUsuario = widget.usuario.cidade?.nome.toLowerCase() ?? '';
+
+    lista.sort((a, b) {
+      final aMesmaCidade = _pertenceCidade(a, cidadeUsuario);
+      final bMesmaCidade = _pertenceCidade(b, cidadeUsuario);
+      if (aMesmaCidade != bMesmaCidade) {
+        return aMesmaCidade ? -1 : 1;
+      }
+      return _getDistanciaKm(a).compareTo(_getDistanciaKm(b));
+    });
+
+    return lista;
+  }
+
+  bool _pertenceCidade(PontoColeta ponto, String cidadeUsuario) {
+    if (cidadeUsuario.isEmpty) return false;
+    final cidadePonto = ponto.cidade?.nome.toLowerCase() ?? '';
+    if (cidadePonto.contains(cidadeUsuario) || cidadeUsuario.contains(cidadePonto)) {
       return true;
     }
+    return ponto.endereco.toLowerCase().contains(cidadeUsuario);
   }
 
-  // Gera uma distância aproximada baseada na latitude/longitude ou uma distância fictícia fixa para o mockup
-  double _getMockDistance(PontoColeta p) {
-    if (p.latitude != null && p.longitude != null) {
-      // Cálculo simples de distância euclidiana multiplicada para parecer em km
-      // (usando como centro fictício a cidade do usuário)
-      final userLat = widget.usuario.cidade?.nome.toLowerCase() == "curitiba" ? -25.4284 : -23.4210; // Curitiba ou Maringá
-      final userLng = widget.usuario.cidade?.nome.toLowerCase() == "curitiba" ? -49.2733 : -51.9331;
-      
-      final dLat = p.latitude! - userLat;
-      final dLng = p.longitude! - userLng;
-      final dist = (dLat * dLat + dLng * dLng) * 10;
-      return double.parse((dist + 1.2).toStringAsFixed(1)); // Garante uma distância mínima realista
+  (double, double) _coordenadasUsuario() {
+    final cidade = widget.usuario.cidade?.nome.toLowerCase() ?? '';
+    if (cidade.contains('curitiba')) return (-25.4284, -49.2733);
+    if (cidade.contains('maringá') || cidade.contains('maringa')) {
+      return (-23.4210, -51.9331);
     }
-    
-    // Distâncias padrão baseadas no mock
-    if (p.nome.contains("Pinheiros")) return 1.2;
-    if (p.nome.contains("Mada")) return 2.5;
-    if (p.nome.contains("Jardins")) return 3.8;
-    return 4.2;
+    if (cidade.contains('são paulo') || cidade.contains('sao paulo')) {
+      return (-23.5505, -46.6333);
+    }
+    return (-23.4210, -51.9331);
   }
+
+  double _getDistanciaKm(PontoColeta p) {
+    if (p.latitude == null || p.longitude == null) return double.maxFinite;
+
+    final (userLat, userLng) = _coordenadasUsuario();
+    const earthRadiusKm = 6371.0;
+    final dLat = _toRad(p.latitude! - userLat);
+    final dLng = _toRad(p.longitude! - userLng);
+    final lat1 = _toRad(userLat);
+    final lat2 = _toRad(p.latitude!);
+
+    final a = (math.sin(dLat / 2) * math.sin(dLat / 2)) +
+        (math.cos(lat1) * math.cos(lat2) * math.sin(dLng / 2) * math.sin(dLng / 2));
+    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    return earthRadiusKm * c;
+  }
+
+  double _toRad(double value) => value * 3.141592653589793 / 180;
 
   List<String> _getTodosMateriaisUnicos() {
     final lista = <String>["Todos"];
@@ -125,6 +199,7 @@ class _MapTabState extends State<MapTab> {
   @override
   void dispose() {
     _searchController.dispose();
+    _mapController.dispose();
     super.dispose();
   }
 
@@ -180,73 +255,93 @@ class _MapTabState extends State<MapTab> {
                   ),
                 ),
 
-                // Map Mockup Container
+                // Mapa OpenStreetMap
                 Container(
-                  height: 160,
+                  height: 220,
                   margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                  width: double.infinity,
+                  clipBehavior: Clip.hardEdge,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE9ECEF).withOpacity(0.5),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: const Color(0xFFDEE2E6)),
                   ),
                   child: Stack(
-                    alignment: Alignment.center,
                     children: [
-                      // Grid Pattern for Map mock
-                      Positioned.fill(
-                        child: GridPaper(
-                          color: const Color(0xFFCED4DA).withOpacity(0.25),
-                          interval: 40.0,
-                          divisions: 1,
-                          subdivisions: 1,
-                        ),
-                      ),
-                      // Decorative Pins
-                      const Positioned(
-                        top: 40,
-                        left: 60,
-                        child: Icon(Icons.location_on, color: primaryGreen, size: 28),
-                      ),
-                      const Positioned(
-                        top: 70,
-                        right: 80,
-                        child: Icon(Icons.location_on, color: Colors.green, size: 24),
-                      ),
-                      Positioned(
-                        bottom: 30,
-                        right: 40,
-                        child: Icon(Icons.location_on, color: Colors.blue[400], size: 28),
-                      ),
-                      // Central Mock Indicator
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 10,
-                                )
-                              ]
-                            ),
-                            child: const Icon(Icons.close, color: Color(0xFFADB5BD), size: 26),
+                      FlutterMap(
+                        mapController: _mapController,
+                        options: MapOptions(
+                          initialCenter: _centroInicial(),
+                          initialZoom: 11,
+                          minZoom: 4,
+                          maxZoom: 18,
+                          interactionOptions: const InteractionOptions(
+                            flags: InteractiveFlag.all,
                           ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            "VISUALIZAÇÃO DO MAPA",
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF6C757D),
-                              letterSpacing: 1.0,
-                            ),
+                        ),
+                        children: [
+                          TileLayer(
+                            urlTemplate: _tileUrl,
+                            userAgentPackageName:
+                                'br.com.eletrodescarte.eletrodescarte_mobile',
+                          ),
+                          MarkerLayer(
+                            markers: _pontosComCoordenadas.map((ponto) {
+                              final isOpen = ponto.estaAbertoAgora;
+                              return Marker(
+                                point: LatLng(ponto.latitude!, ponto.longitude!),
+                                width: 40,
+                                height: 40,
+                                child: GestureDetector(
+                                  onTap: () => _mostrarOpcoesPonto(ponto),
+                                  child: Icon(
+                                    Icons.location_on,
+                                    size: 36,
+                                    color: isOpen ? primaryGreen : const Color(0xFFADB5BD),
+                                    shadows: const [
+                                      Shadow(
+                                        blurRadius: 4,
+                                        color: Colors.black26,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }).toList(),
                           ),
                         ],
+                      ),
+                      if (_pontosComCoordenadas.isEmpty)
+                        Container(
+                          color: Colors.white.withOpacity(0.85),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            'Nenhum ponto com coordenadas para exibir',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF6C757D),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      Positioned(
+                        right: 10,
+                        bottom: 10,
+                        child: Material(
+                          color: Colors.white,
+                          elevation: 2,
+                          borderRadius: BorderRadius.circular(8),
+                          child: InkWell(
+                            onTap: _ajustarMapa,
+                            borderRadius: BorderRadius.circular(8),
+                            child: const Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Icon(
+                                Icons.my_location,
+                                size: 20,
+                                color: Color(0xFF1ECB71),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -339,8 +434,8 @@ class _MapTabState extends State<MapTab> {
                     itemCount: _pontosFiltrados.length,
                     itemBuilder: (context, index) {
                       final ponto = _pontosFiltrados[index];
-                      final isOpen = _isPointOpen(ponto);
-                      final distance = _getMockDistance(ponto);
+                      final isOpen = ponto.estaAbertoAgora;
+                      final distance = _getDistanciaKm(ponto);
 
                       return Container(
                         margin: const EdgeInsets.only(bottom: 12),
@@ -430,7 +525,7 @@ class _MapTabState extends State<MapTab> {
                                       Icon(Icons.location_on_outlined, color: Colors.green[700], size: 14),
                                       const SizedBox(width: 4),
                                       Text(
-                                        "$distance km",
+                                        "${distance.toStringAsFixed(1)} km",
                                         style: const TextStyle(fontSize: 11, color: Color(0xFF6C757D)),
                                       ),
                                       const SizedBox(width: 14),
@@ -450,6 +545,7 @@ class _MapTabState extends State<MapTab> {
                             // Action Button / Arrow
                             IconButton(
                               onPressed: () {
+                                _focarPonto(ponto);
                                 _mostrarOpcoesPonto(ponto);
                               },
                               icon: Icon(

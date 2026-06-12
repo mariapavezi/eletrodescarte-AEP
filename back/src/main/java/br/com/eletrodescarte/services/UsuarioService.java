@@ -29,7 +29,7 @@ public class UsuarioService {
         usuario.setHashSenha(senhaCriptografada);
 
         if (usuario.getPapel() == null) {
-            usuario.setPapel(PapelUsuario.cidadao);
+            usuario.setPapel(PapelUsuario.CIDADAO);
         }
 
         return usuarioRepository.save(usuario);

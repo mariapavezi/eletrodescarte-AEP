@@ -34,11 +34,6 @@ public class IndicadorService {
             BigDecimal totalAguaEconomizada
     ) {}
 
-    /**
-     * Calcula os indicadores de impacto ambiental do usuário.
-     * Implementado com O(1) de busca em memória para FatoresMateriais, 
-     * evitando múltiplas consultas ao banco durante o processamento.
-     */
     public IndicadoresDTO calcularIndicadoresPorUsuario(Long idUsuario) {
 
         Usuario usuario = usuarioRepository.findById(idUsuario)
@@ -46,7 +41,6 @@ public class IndicadorService {
 
         List<Descarte> descartes = descarteRepository.findByUsuario(usuario);
 
-        // O(N) para carregar todos os fatores em um HashMap, garantindo busca O(1) posterior
         Map<Long, FatoresMateriais> cacheFatores = fatoresRepository.findAll().stream()
                 .collect(Collectors.toMap(FatoresMateriais::getIdMaterial, f -> f));
 
@@ -61,7 +55,6 @@ public class IndicadorService {
                 BigDecimal quantidadeKg = item.getQuantidadeKg();
                 totalKg = totalKg.add(quantidadeKg);
 
-                // Busca O(1) no HashMap
                 FatoresMateriais fatores = cacheFatores.get(item.getMaterial().getIdMaterial());
 
                 if (fatores != null) {
